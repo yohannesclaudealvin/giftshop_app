@@ -1,9 +1,9 @@
 library(shiny)
 library(shinythemes)
-library(shinyWidgets)
 library(DT)
+library(shinyWidgets)
 
-# Sample product data (expand this for more products)
+# Sample Data (Add more items with appropriate subcategories, gender, etc.)
 products <- data.frame(
   Name = c("Rose Teddy", "Customized Mug", "LED Frame"),
   Description = c("Elegant teddy made of roses", 
@@ -11,7 +11,10 @@ products <- data.frame(
                   "Stylish LED-lit frame for photos"),
   Price = c(25, 15, 35),
   Availability = c("In Stock", "In Stock", "Limited Stock"),
-  Rating = c(4.5, 4.7, 4.9),
+  Gender = c("Women", "Unisex", "Men"),
+  Subcategory = c("Accessories", "Accessories", "Bags"),
+  Sale = c(TRUE, FALSE, TRUE),
+  Location = c("Nairobi", "Mombasa", "Nairobi"),
   Image = c("Rose Teddy.jpg", "Customized Mug.jpg", "LED Frame.jpg"),
   stringsAsFactors = FALSE
 )
@@ -21,24 +24,16 @@ ui <- fluidPage(
   theme = shinytheme("flatly"),
   
   tags$head(tags$style(HTML("
-    body { font-family: 'Segoe UI', sans-serif; background-color: #fafafa; }
-    .product-image { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 15px; background: white; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .price { font-size: 1.2em; font-weight: bold; color: #E91E63; }
-    .navbar-brand { font-size: 22px; font-weight: bold; }
-    .section-title { margin-top: 30px; }
+    .product-image { width: 100%; height: 220px; object-fit: cover; border-radius: 10px; }
+    .card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+    .price { color: #E91E63; font-weight: bold; font-size: 18px; }
   "))),
   
   navbarPage("Gift Hub", id = "nav",
              
              tabPanel("Home",
-                      fluidRow(
-                        column(12, align = "center",
-                               h2("Welcome to Gift Hub 🎁"),
-                               p("Elegant gifts for every celebration — curated with love and care.")
-                        )
-                      ),
-                      hr(),
+                      h2("🎁 Welcome to Gift Hub"),
+                      p("Your elegant, modern e-commerce gift shop."),
                       fluidRow(
                         lapply(1:nrow(products), function(i) {
                           column(4, div(class = "card",
@@ -46,6 +41,7 @@ ui <- fluidPage(
                                         h4(products$Name[i]),
                                         p(products$Description[i]),
                                         span(class = "price", paste0("$", products$Price[i])),
+                                        if (products$Sale[i]) span("🔥 On Sale!", style = "color: red; font-weight: bold;"),
                                         br(),
                                         actionButton(paste0("add_", i), "Add to Cart", icon = icon("cart-plus"))
                           ))
@@ -56,10 +52,11 @@ ui <- fluidPage(
              tabPanel("Shop",
                       sidebarLayout(
                         sidebarPanel(
-                          pickerInput("availability", "Filter by Availability",
-                                      choices = unique(products$Availability),
-                                      multiple = TRUE, selected = unique(products$Availability)),
-                          sliderInput("price_range", "Price Range", min = 0, max = 50, value = c(0, 50))
+                          pickerInput("gender", "Gender", choices = c("Women", "Men", "Unisex"), selected = c("Women", "Men"), multiple = TRUE),
+                          pickerInput("subcategory", "Subcategory", choices = unique(products$Subcategory), selected = unique(products$Subcategory), multiple = TRUE),
+                          pickerInput("location", "Location", choices = unique(products$Location), selected = unique(products$Location), multiple = TRUE),
+                          checkboxInput("saleOnly", "On Sale Only", FALSE),
+                          sliderInput("price_range", "Price Range", min = 0, max = 100, value = c(0, 50))
                         ),
                         mainPanel(
                           DTOutput("shop_table")
@@ -67,28 +64,21 @@ ui <- fluidPage(
                       )
              ),
              
-             tabPanel("Cart",
-                      h3("🛒 Shopping Cart"),
-                      p("Cart functionality is under development."),
-                      p("You will be able to see added items, update quantity, and proceed to checkout here.")
-             ),
-             
              tabPanel("Contact",
                       fluidRow(
                         column(6,
-                               h3("Need Assistance?"),
-                               p("Send us a message or reach out through our social platforms."),
-                               textInput("name", "Name"),
-                               textInput("email", "Email"),
-                               textAreaInput("message", "Message", "", rows = 5),
-                               actionButton("send_msg", "Send Message", class = "btn btn-primary")
+                               h3("Need Help?"),
+                               textInput("name", "Your Name"),
+                               textInput("email", "Email Address"),
+                               textAreaInput("message", "Message", "", rows = 4),
+                               actionButton("send", "Send", class = "btn-primary")
                         ),
                         column(6,
-                               h4("Connect With Us"),
+                               h4("Follow Us"),
                                tags$ul(
-                                 tags$li(a("Facebook", href = "https://facebook.com", target = "_blank")),
-                                 tags$li(a("Instagram", href = "https://instagram.com", target = "_blank")),
-                                 tags$li(a("Twitter", href = "https://twitter.com", target = "_blank"))
+                                 tags$li(a("Instagram", href = "#")),
+                                 tags$li(a("Facebook", href = "#")),
+                                 tags$li(a("Twitter", href = "#"))
                                )
                         )
                       )
@@ -100,9 +90,18 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   filtered_products <- reactive({
-    products[products$Price >= input$price_range[1] &
-               products$Price <= input$price_range[2] &
-               products$Availability %in% input$availability, ]
+    df <- products[
+      products$Price >= input$price_range[1] &
+        products$Price <= input$price_range[2] &
+        products$Gender %in% input$gender &
+        products$Subcategory %in% input$subcategory &
+        products$Location %in% input$location, ]
+    
+    if (input$saleOnly) {
+      df <- df[df$Sale == TRUE, ]
+    }
+    
+    return(df)
   })
   
   output$shop_table <- renderDT({

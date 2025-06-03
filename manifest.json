@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "name": "Giftshop App",
+  "description": "An e-commerce gift shop built with Shiny",
+  "authors": ["Your Name"],
+  "main": "app.R"
+}
