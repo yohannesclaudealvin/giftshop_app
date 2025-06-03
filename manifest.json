@@ -1,7 +1,15 @@
 {
+  "name": "giftshop_app",
   "version": "1.0.0",
-  "name": "Giftshop App",
-  "description": "An e-commerce gift shop built with Shiny",
-  "authors": ["Your Name"],
-  "main": "app.R"
+  "description": "E-Commerce Shiny App for a modern gift shop",
+  "author": "AMNA",
+  "main": "giftshop_app.py",
+  "dependencies": [],
+  "packages": [
+    "shiny",
+    "shinywidgets",
+    "pandas",
+    "plotly",
+    "htmltools"
+  ]
 }
