@@ -31,58 +31,58 @@ ui <- fluidPage(
   
   navbarPage("Gift Hub", id = "nav",
              
-             tabPanel("Home",
-                      h2("🎁 Welcome to Gift Hub"),
-                      p("Your elegant, modern e-commerce gift shop."),
-                      fluidRow(
-                        lapply(1:nrow(products), function(i) {
-                          column(4, div(class = "card",
-                                        img(src = products$Image[i], class = "product-image"),
-                                        h4(products$Name[i]),
-                                        p(products$Description[i]),
-                                        span(class = "price", paste0("$", products$Price[i])),
-                                        if (products$Sale[i]) span("🔥 On Sale!", style = "color: red; font-weight: bold;"),
-                                        br(),
-                                        actionButton(paste0("add_", i), "Add to Cart", icon = icon("cart-plus"))
-                          ))
-                        })
-                      )
-             ),
-             
-             tabPanel("Shop",
-                      sidebarLayout(
-                        sidebarPanel(
-                          pickerInput("gender", "Gender", choices = c("Women", "Men", "Unisex"), selected = c("Women", "Men"), multiple = TRUE),
-                          pickerInput("subcategory", "Subcategory", choices = unique(products$Subcategory), selected = unique(products$Subcategory), multiple = TRUE),
-                          pickerInput("location", "Location", choices = unique(products$Location), selected = unique(products$Location), multiple = TRUE),
-                          checkboxInput("saleOnly", "On Sale Only", FALSE),
-                          sliderInput("price_range", "Price Range", min = 0, max = 100, value = c(0, 50))
-                        ),
-                        mainPanel(
-                          DTOutput("shop_table")
-                        )
-                      )
-             ),
-             
-             tabPanel("Contact",
-                      fluidRow(
-                        column(6,
-                               h3("Need Help?"),
-                               textInput("name", "Your Name"),
-                               textInput("email", "Email Address"),
-                               textAreaInput("message", "Message", "", rows = 4),
-                               actionButton("send", "Send", class = "btn-primary")
-                        ),
-                        column(6,
-                               h4("Follow Us"),
-                               tags$ul(
-                                 tags$li(a("Instagram", href = "#")),
-                                 tags$li(a("Facebook", href = "#")),
-                                 tags$li(a("Twitter", href = "#"))
-                               )
-                        )
-                      )
-             )
+    tabPanel("Home",
+      h2("🎁 Welcome to Gift Hub"),
+      p("Your elegant, modern e-commerce gift shop."),
+      fluidRow(
+        lapply(1:nrow(products), function(i) {
+          column(4, div(class = "card",
+            img(src = products$Image[i], class = "product-image"),
+            h4(products$Name[i]),
+            p(products$Description[i]),
+            span(class = "price", paste0("$", products$Price[i])),
+            if (products$Sale[i]) span("🔥 On Sale!", style = "color: red; font-weight: bold;"),
+            br(),
+            actionButton(paste0("add_", i), "Add to Cart", icon = icon("cart-plus"))
+          ))
+        })
+      )
+    ),
+    
+    tabPanel("Shop",
+      sidebarLayout(
+        sidebarPanel(
+          pickerInput("gender", "Gender", choices = c("Women", "Men", "Unisex"), selected = c("Women", "Men"), multiple = TRUE),
+          pickerInput("subcategory", "Subcategory", choices = unique(products$Subcategory), selected = unique(products$Subcategory), multiple = TRUE),
+          pickerInput("location", "Location", choices = unique(products$Location), selected = unique(products$Location), multiple = TRUE),
+          checkboxInput("saleOnly", "On Sale Only", FALSE),
+          sliderInput("price_range", "Price Range", min = 0, max = 100, value = c(0, 50))
+        ),
+        mainPanel(
+          DTOutput("shop_table")
+        )
+      )
+    ),
+    
+    tabPanel("Contact",
+      fluidRow(
+        column(6,
+          h3("Need Help?"),
+          textInput("name", "Your Name"),
+          textInput("email", "Email Address"),
+          textAreaInput("message", "Message", "", rows = 4),
+          actionButton("send", "Send", class = "btn-primary")
+        ),
+        column(6,
+          h4("Follow Us"),
+          tags$ul(
+            tags$li(a("Instagram", href = "#")),
+            tags$li(a("Facebook", href = "#")),
+            tags$li(a("Twitter", href = "#"))
+          )
+        )
+      )
+    )
   )
 )
 
@@ -92,10 +92,10 @@ server <- function(input, output, session) {
   filtered_products <- reactive({
     df <- products[
       products$Price >= input$price_range[1] &
-        products$Price <= input$price_range[2] &
-        products$Gender %in% input$gender &
-        products$Subcategory %in% input$subcategory &
-        products$Location %in% input$location, ]
+      products$Price <= input$price_range[2] &
+      products$Gender %in% input$gender &
+      products$Subcategory %in% input$subcategory &
+      products$Location %in% input$location, ]
     
     if (input$saleOnly) {
       df <- df[df$Sale == TRUE, ]
